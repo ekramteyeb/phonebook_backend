@@ -25,7 +25,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 app.use(morgan('tiny'))
 
 app.get('/', (req, res) => {
-    res.send('<h1>Phonebook from backend</h1>')
+    res.sendFile(path.join(__dirname + '/build/index.html'))
 })
 
 app.get('/api/persons', (req, res) => {
