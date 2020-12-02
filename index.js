@@ -1,9 +1,9 @@
-
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const cors = require('cors')
 const morgan = require('morgan')
-const PORT = process.env.PORT || 3001
+const Person = require('./models/person')
 
 morgan.token('person', function getBody(req) {
     return JSON.stringify(req.body)
@@ -24,40 +24,15 @@ app.use(express.static('build'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person'))
 app.use(morgan('tiny'))
 
-let persons = [
-    {
-        name: "Arto Hellas",
-        number: "040-12345",
-        id: 1
-    },
-    {
-        name: "Ada Lovelace",
-        number: "046-02345",
-        id: 2
-    },
-    {
-        name: "Dan Abromove",
-        number: "040-10909",
-        id: 3
-    },
-    {
-        name: "Hussen",
-        number: "040-19909",
-        id: 4
-    },
-    {
-        name: "Hamza",
-        number: "040-19909",
-        id: 5
-    }
-]
-
 app.get('/', (req, res) => {
     res.send('<h1>Phonebook from backend</h1>')
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    Person.find({}).then(persons => {
+        res.json(persons)
+    })
+    
 })
 app.get('/info', (req, res) => {
     res.send(
@@ -117,7 +92,7 @@ app.put('/api/persons/:id', (req, res) => {
 })
 //to catch unknown endpoints 
 app.use(unknownEndpoint)
-
+const PORT = process.env.PORT
 app.listen(PORT, (error) => {
     console.log(`Server running  on port number ${PORT}`)
 })
