@@ -32,7 +32,6 @@ app.get('/api/persons', (req, res) => {
         res.json(persons)
         //mongoose.connection.close()
     })
-    
 })
 app.get('/info', (req, res) => {
     res.send(
