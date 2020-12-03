@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
 app.get('/api/persons', (req, res) => {
     Person.find({}).then(persons => {
         res.json(persons)
-        mongoose.connection.close()
+        //mongoose.connection.close()
     })
     
 })
