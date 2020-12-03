@@ -35,7 +35,7 @@ app.get('/api/persons', (req, res) => {
         res.json(persons)
         //mongoose.connection.close()
     }).catch(e => {
-        res.send(e.message)
+        res.send('persons not fetched')
     })
 })
 app.get('/info', (req, res) => {
