@@ -4,7 +4,7 @@ const app = express()
 const Person = require('./models/person')
 const morgan = require('morgan')
 const cors = require('cors')
-morgan.token('person', function getBody(req) {
+morgan.token('personi', function getBody(req) {
     return JSON.stringify(req.body)
 })
 
@@ -20,7 +20,7 @@ app.use(cors())
 //enables the app to consume static files in built front end folder
 app.use(express.static('build'))
 //log to console the given data 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :person'))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :personi'))
 app.use(morgan('tiny'))
 
 app.get('/', (req, res) => {
