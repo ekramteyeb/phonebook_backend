@@ -1,9 +1,12 @@
 require('dotenv').config()
+//express node
 const express = require('express')
 const app = express()
 const Person = require('./models/person')
-const morgan = require('morgan')
 const cors = require('cors')
+const morgan = require('morgan')  
+
+
 morgan.token('personi', function getBody(req) {
     return JSON.stringify(req.body)
 })
@@ -31,6 +34,8 @@ app.get('/api/persons', (req, res) => {
     Person.find({}).then(persons => {
         res.json(persons)
         //mongoose.connection.close()
+    }).catch(e => {
+        res.send('Persons not fetched.')
     })
 })
 app.get('/info', (req, res) => {
@@ -60,7 +65,7 @@ app.post('/api/persons', (req, res) => {
         // Remember calling return is crucial 
        return res.status(400).json({ error: "name and number should be given" }).end()
     } else {
-        Person.find({})
+        //Person.find({})
         const personExist = Person.find({'name':request.name})/*person => person.name.toLowerCase() === request.name.toLowerCase())*/
         if (personExist) {
            return  res.status(409).json({ error: "name must be unique" }).end()
