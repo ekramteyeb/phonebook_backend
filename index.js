@@ -31,6 +31,7 @@ app.get('/', (req, res) => {
 app.get('/api/persons', (req, res) => {
     Person.find({}).then(persons => {
         res.json(persons)
+        mongoose.connection.close()
     })
     
 })
@@ -61,7 +62,8 @@ app.post('/api/persons', (req, res) => {
         // Remember calling return is crucial 
        return res.status(400).json({ error: "name and number should be given" }).end()
     } else {
-        const personExist = persons.find(person => person.name.toLowerCase() === request.name.toLowerCase())
+        Person.find({})
+        const personExist = Person.find({'name':request.name})/*person => person.name.toLowerCase() === request.name.toLowerCase())*/
         if (personExist) {
            return  res.status(409).json({ error: "name must be unique" }).end()
         } else {
@@ -69,7 +71,7 @@ app.post('/api/persons', (req, res) => {
             const person = { 
                 name:request.name,
                 number:request.number,
-                id: id
+                id: id,
             }
             persons = persons.concat(person)
             res.json(person)
