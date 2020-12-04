@@ -40,23 +40,25 @@ app.get('/api/persons', (req, res) => {
 })
 app.get('/info', (req, res) => {
     res.send(
-        `<p>Phonebook has info for ${persons.length} people</p> 
+        `<p>Phonebook has info for ${''} people</p> 
         <p>${new Date()}</p>`
     )
 })
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(person => person.id === id)
-    if (person) {
+    const id = req.params.id
+    Person.findById(id).then(person => {
         res.json(person)
-    } else {
-        res.status(404).send({ error: "resourse not found" })
-    }
+        console.log(id)
+    }).catch(e => {
+        res.status(400).send({ error: "resourse not found" }).end()
+    })
 })
 app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
-    res.status(204).end()
+    const id = req.params.id
+    Person.findByIdAndDelete(id, (err,success) =>{
+        if(err) return res.status(204).send(err)
+        return res.status(204).send(success)
+    })
 })
 
 app.post('/api/persons', (req, res) => {
@@ -65,35 +67,30 @@ app.post('/api/persons', (req, res) => {
         // Remember calling return is crucial 
        return res.status(400).json({ error: "name and number should be given" }).end()
     } else {
-        //Person.find({})
-        const personExist = Person.find({'name':request.name})/*person => person.name.toLowerCase() === request.name.toLowerCase())*/
-        if (personExist) {
-           return  res.status(409).json({ error: "name must be unique" }).end()
-        } else {
-            const id = Math.floor(Math.random() * 1000000)
-            const person = { 
+    
+        Person.find({name:request.name}, (err, resp)=> {
+            if(err) return res.status(500).send(err);
+            if(resp.length > 0){
+                return  res.status(409).json({ error: "name must be unique" }).end()
+            }else{
+                const person = new Person ({ 
                 name:request.name,
                 number:request.number,
-                id: id,
+                })
+                person.save().then( savedPerson => {
+                    res.json(savedPerson)
+                })
             }
-            persons = persons.concat(person)
-            res.json(person)
-        }
+        })
     }
 })
 app.put('/api/persons/:id', (req, res) => {    
-    const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
-    if(person){
-        const newNumber = req.body.number
-        const changedPerson = { ...person, number: newNumber }
-
-        persons = persons.map(person => person.id !== id ? person : changedPerson)
-
-        res.json(changedPerson)
-    }else{
-       return res.status(400).json({error:"Unkown end point"}).end()
-    }
+    const id = req.params.id 
+    Person.findByIdAndUpdate(id, req.body,{new:true},(err,p)=>{
+        // Handle any possible database errors
+        if (err) return res.status(500).send(err);
+        return res.send(p);
+    })
 })
 //to catch unknown endpoints 
 app.use(unknownEndpoint)
