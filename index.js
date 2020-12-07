@@ -54,14 +54,11 @@ app.get('/info', (req, res) => {
         <p>${new Date()}</p>`
     )
 })
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res,next) => {
     const id = req.params.id
     Person.findById(id).then(person => {
         res.json(person)
-        console.log(id)
-    }).catch(e => {
-        res.status(400).send({ error: "resourse not found" }).end()
-    })
+    }).catch(error => next(error))
 })
 app.delete('/api/persons/:id', (req, res,next) => {
     const id = req.params.id
@@ -101,13 +98,16 @@ app.post('/api/persons', (req, res) => {
         })
     }
 })
-app.put('/api/persons/:id', (req, res) => {    
+app.put('/api/persons/:id', (req, res,next) => {    
     const id = req.params.id 
-    Person.findByIdAndUpdate(id, req.body,{new:true},(err,p)=>{
+    Person.findByIdAndUpdate(id, req.body,{new:true})
+    .then( changedPerson  => {
         // Handle any possible database errors
-        if (err) return res.status(500).send(err);
-        return res.send(p);
+         /* if (!changedPerson) return res.status(500).send(err);
+        return res.send(changedPerson)  */
+        res.json(changedPerson)
     })
+    .catch(error => next(error))
 })
 //to catch unknown endpoints 
 app.use(unknownEndpoint)
