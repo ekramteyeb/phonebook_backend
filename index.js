@@ -49,10 +49,18 @@ app.get('/api/persons', (req, res) => {
     })
 })
 app.get('/info', (req, res) => {
-    res.send(
-        `<p>Phonebook has info for ${''} people</p> 
+    Person.find({})
+    .then(result => {
+        res.send(
+        `<p>Phonebook has info for ${result.length} people</p> 
         <p>${new Date()}</p>`
-    )
+        )
+    }).catch(error => {
+        console.error('Something went wrong')
+        res.status(404).send('somthing went wrong').end()
+    })
+
+    
 })
 app.get('/api/persons/:id', (req, res,next) => {
     const id = req.params.id
