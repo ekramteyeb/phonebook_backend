@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 //to configure enviromental variables, to read and access them if the app is not created using npm create react app
-const dotenv = require('dotenv');
-dotenv.config();
+const dotenv = require('dotenv').config();
 
 if (process.argv.length < 3) {
   console.log('Please provide the password as an argument: node mongo.js <password>')
@@ -12,10 +11,9 @@ const given_password = process.argv[2]
 const name = process.argv[3]
 const number = process.argv[4]
 
-
 const url = `mongodb+srv://daki_group:${given_password}@reemah.1xrf2.mongodb.net/phonebook-app?retryWrites=true&w=majority`
  // `mongodb+srv://daki_group:<password>@reemah.1xrf2.mongodb.net/<dbname>?retryWrites=true&w=majority`
-if(CONN_PASS == given_password){
+if(given_password === CONN_PASS){
   mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
   //.then(a => console.log('added', name, number, 'to phonebook'), mongoose.connection.close())
   .catch(error => console.log('not connected'))

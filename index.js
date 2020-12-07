@@ -16,12 +16,22 @@ const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
 } 
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+//enables the app to consume static files in built front end folder
+app.use(express.static('build'))
 //middlewares
 app.use(express.json())
 //to use cross origin file transfer 
 app.use(cors())
-//enables the app to consume static files in built front end folder
-app.use(express.static('build'))
 //log to console the given data 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :personi'))
 app.use(morgan('tiny'))
@@ -53,12 +63,19 @@ app.get('/api/persons/:id', (req, res) => {
         res.status(400).send({ error: "resourse not found" }).end()
     })
 })
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res,next) => {
     const id = req.params.id
-    Person.findByIdAndDelete(id, (err,success) =>{
-        if(err) return res.status(204).send(err)
-        return res.status(204).send(success)
+    Person.findByIdAndRemove(id)
+    .then(result => {
+        if(result === null){
+            console.log('No data deleted')
+            res.status(404).send('Nothing deleted')
+        }else{
+            console.log('Successfully deleted')
+            res.status(204).end()
+        }
     })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res) => {
@@ -94,6 +111,10 @@ app.put('/api/persons/:id', (req, res) => {
 })
 //to catch unknown endpoints 
 app.use(unknownEndpoint)
+app.use(errorHandler)
+
+
+
 const PORT = process.env.PORT
 app.listen(PORT, (error) => {
     console.log(`Server running  on port number ${PORT}`)
