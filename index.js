@@ -4,7 +4,8 @@ const express = require('express')
 const app = express()
 const Person = require('./models/person')
 const cors = require('cors')
-const morgan = require('morgan')  
+const morgan = require('morgan');  
+const { response, query } = require('express');
 
 
 morgan.token('personi', function getBody(req) {
@@ -13,16 +14,22 @@ morgan.token('personi', function getBody(req) {
 
 //middleware for unknown endpoint request
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' })
+    response.status(404).send({ error: 'unknown endpoint'})
 } 
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError') {
+    
     return response.status(400).send({ error: 'malformatted id' })
-  } 
-
+  }else if(error.name === 'ValidationError'){
+      
+      return response.status(409).send({error:error.message})
+  }else if(error.name === 'MongoError'){
+      //console.log(error.response.data.error)
+      return response.status(409).send({error:error.message})
+  }
   next(error)
 }
 
@@ -59,8 +66,6 @@ app.get('/info', (req, res) => {
         console.error('Something went wrong')
         res.status(404).send('somthing went wrong').end()
     })
-
-    
 })
 app.get('/api/persons/:id', (req, res,next) => {
     const id = req.params.id
@@ -82,33 +87,23 @@ app.delete('/api/persons/:id', (req, res,next) => {
     })
     .catch(error => next(error))
 })
-
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const request = req.body
-    if (Object.keys(request).length === 0 || request.name === '' || request.number === '' || typeof request.name !== 'string' || request.name === null || request.number === undefined || request === NaN) {
-        // Remember calling return is crucial 
-       return res.status(400).json({ error: "name and number should be given" }).end()
-    } else {
-    
-        Person.find({name:request.name}, (err, resp)=> {
-            if(err) return res.status(500).send(err);
-            if(resp.length > 0){
-                return  res.status(409).json({ error: "name must be unique" }).end()
-            }else{
-                const person = new Person ({ 
-                name:request.name,
-                number:request.number,
-                })
-                person.save().then( savedPerson => {
-                    res.json(savedPerson)
-                })
-            }
-        })
-    }
+    const person = new Person ({ 
+    name:request.name,
+    number:request.number,
+    })
+    person.save()
+    .then( savedPerson => {
+        res.json(savedPerson)
+    })
+    .catch(error => next(error))
 })
 app.put('/api/persons/:id', (req, res,next) => {    
     const id = req.params.id 
-    Person.findByIdAndUpdate(id, req.body,{new:true})
+    const {number} = req.body
+    
+    Person.findByIdAndUpdate(id,{number},{new:true,runValidators:true,context:query})
     .then( changedPerson  => {
         // Handle any possible database errors
          /* if (!changedPerson) return res.status(500).send(err);
@@ -120,8 +115,6 @@ app.put('/api/persons/:id', (req, res,next) => {
 //to catch unknown endpoints 
 app.use(unknownEndpoint)
 app.use(errorHandler)
-
-
 
 const PORT = process.env.PORT
 app.listen(PORT, (error) => {
