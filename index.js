@@ -24,10 +24,10 @@ const errorHandler = (error, request, response, next) => {
     
     return response.status(400).send({ error: 'malformatted id' })
   }else if(error.name === 'ValidationError'){
-      
+      // console.log('Error message from backend',error.message)
       return response.status(409).send({error:error.message})
   }else if(error.name === 'MongoError'){
-      //console.log(error.response.data.error)
+      //console.log(error.message)
       return response.status(409).send({error:error.message})
   }
   next(error)
