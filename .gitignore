@@ -104,3 +104,4 @@ dist
 .tern-port
 # My files 
 index-training.js
+index_withoutdb.js
