@@ -7,7 +7,7 @@ const app = express()
 const cors = require('cors')
 const morgan = require('morgan')
 const { query } = require('express')
-const path = require('path')
+// const path = require('path')
 const Person = require('./models/person')
 
 morgan.token('personi', (req) => JSON.stringify(req.body))
@@ -43,9 +43,9 @@ app.use(cors())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :personi'))
 app.use(morgan('tiny'))
 
-app.get('/', (req, res) => {
+/* app.get('/', (req, res) => {
   res.sendFile(path.join(`${__dirname}/build/index.html`))
-})
+}) */
 
 app.get('/api/persons', (req, res) => {
   Person.find({}).then(persons => {
